@@ -11,6 +11,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.myapplication.WebServices.Asynchtask;
+import com.example.myapplication.WebServices.WebService;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -19,10 +21,20 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.slider.Slider;
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback,Asynchtask {
 
     GoogleMap mapa;
     Double lat, lng;
@@ -87,7 +99,31 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void updateInterfaz(){
         txtLat.setText(String.format("%.4f", lat));
         txtLong.setText(String.format("%.4f", lng));
-        PintarCirculo();}
+        PintarCirculo();
+
+        Map<String, String> datos = new HashMap<String, String>();
+        WebService ws= new WebService(
+                "https://turismoquevedo.com/lugar_turistico/json_getlistadoMapa?lat="
+                        + lat +   "&lng=" + lng +"&radio=" + (radio/10.0)  ,datos,
+
+                MainActivity.this, MainActivity.this);
+        ws.execute("GET");
+    }
+
+    @Override
+    public void processFinish(String result) throws JSONException {
+        List<Marker> markers = new ArrayList<Marker>();
+        JSONObject JSONobj= new JSONObject(result);
+        JSONArray jsonLista = JSONobj.getJSONArray("data");
+        for(int i=0; i< jsonLista.length(); i++){
+            JSONObject lugar= jsonLista.getJSONObject(i);
+            markers.add(mapa.addMarker(
+                    new MarkerOptions().position(
+                            new LatLng(lugar.getDouble("lat"), lugar.getDouble("lng"))
+                    ).title(lugar.get("nombre").toString())));
+
+        }
+    }
     private void  PintarCirculo(){
         if(circulo!=null){ circulo.remove(); circulo = null; }
         CircleOptions circleOptions = new CircleOptions()
@@ -97,3 +133,5 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .fillColor(Color.argb(50, 150, 50, 50));
         circulo = mapa.addCircle(circleOptions);}
 }
+
+//https://turismoquevedo.com/lugar_turistico/json_getlistadoMapa?lat=-1.0227&lng=-79.46132&radio=1

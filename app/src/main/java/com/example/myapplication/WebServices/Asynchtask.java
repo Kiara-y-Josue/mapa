@@ -1,4 +1,4 @@
-package WebService;
+package com.example.myapplication.WebServices;
 
 
 import org.json.JSONException;
