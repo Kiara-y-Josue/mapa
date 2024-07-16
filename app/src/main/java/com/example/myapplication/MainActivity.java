@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     Circle circulo=null;
     Slider sliderRadio;
     float radio=1;
+    List<Marker> markers = new ArrayList<Marker>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -112,7 +113,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void processFinish(String result) throws JSONException {
-        List<Marker> markers = new ArrayList<Marker>();
+
+        for (Marker marker : markers) marker.remove();
+        markers.clear();
         JSONObject JSONobj= new JSONObject(result);
         JSONArray jsonLista = JSONobj.getJSONArray("data");
         for(int i=0; i< jsonLista.length(); i++){
